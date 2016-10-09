@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Arduino/Genuino 101 CurieIMU Web Bluetooth Orientation Visualiser</title>
+	<style>
+		body{
+			font-family: Helvetica;
+			text-align:center;
+		}
+		ol{
+			width:400px;
+			text-align:left;
+			margin:0 auto;
+		}
+	</style>
+</head>
+<body>
+	<h1>Arduino/Genuino 101 CurieIMU Web Bluetooth Orientation Visualiser</h1>
+	<ol>
+		<li>Upload the CurieIMUBLUE.ino sketch to your 101</li>
+		<li>Go to <code>chrome://flags/#enable-web-bluetooth</code> to enable <a href="https://googlechrome.github.io/samples/web-bluetooth/index.html">Web Bluetooth</a></li>
+		<li>Click <button id="connect">Connect</button></li>
+		<li>Visualize (and Profit)</li>
+	</ol>
+	<canvas data-processing-sources="processing.pde"></canvas>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.6.2/processing.min.js"></script>
+	<script src="http://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<script>
+		//BLE
+		let service        	= 0xBEEF;
+		let characteristic 	= 0xFEED;
+		let byteLength		= 20;
+		//IMU global vars for processing
+		let yaw   = 0.0;
+		let pitch = 0.0;
+		let roll  = 0.0;
+		$(() => {
+			$('#connect').click(() => {
+
+				//BLE setup. Connect and get service/characteristic notifications
+				navigator.bluetooth.requestDevice({ filters: [{ services: [service] }] })
+				.then(device => device.gatt.connect())
+				.then(server => server.getPrimaryService(service))
+				.then(service => service.getCharacteristic(characteristic))
+				.then(characteristic => {
+					return characteristic.startNotifications()
+					.then(_ => {
+						characteristic.addEventListener('characteristicvaluechanged',
+				                        handleCharacteristicValueChanged);
+					});
+				})
+				.then(_ => {
+					console.log('Notifications have been started.');
+				})
+				.catch(error => { console.log(error); });
+
+				function handleCharacteristicValueChanged(event){
+					var value 	= event.target.value;
+					var str 	= "";
+
+					//concat and split string for roll, pitch, yaw (e.g. "-0.58,2.20,328.76")
+					for(var i=0; i<byteLength; i++){
+						str = str + String.fromCharCode(value.getUint8(i));
+					}
+					var imu 	= str.split(',');
+
+					//update globals
+					roll 		= parseFloat(imu[0]);
+					pitch 		= parseFloat(imu[1]);
+					yaw 		= parseFloat(imu[2]);
+				}	
+			});
+		});
+	</script>
+</body>
+</html>
