@@ -1,7 +1,7 @@
 # web-bluetooth-curie-imu
 Arduino/Genuino 101 CurieIMU Web Bluetooth Orientation Visualiser
 
-## Steps
+## Instructions
 1. Download the latest [Arduino IDE](https://www.arduino.cc/en/Main/Software)
 2. Install the latest Intel Curie Core from the [Boards Manager](https://www.arduino.cc/en/Guide/Arduino101)
 3. Install the [Madgwick library](https://github.com/arduino-libraries/MadgwickAHRS)
