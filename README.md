@@ -11,7 +11,7 @@ Arduino/Genuino 101 CurieIMU Web Bluetooth Orientation Visualiser
 7. Visualize!
 
 
-![]();
+![Screenshot](screenshot);
 
 
 ## References
