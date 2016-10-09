@@ -23,7 +23,6 @@
 	</ol>
 	<canvas data-processing-sources="processing.pde"></canvas>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.6.2/processing.min.js"></script>
-	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 	<script>
 		//BLE
 		let service        	= 0xBEEF;
@@ -33,43 +32,45 @@
 		let yaw   = 0.0;
 		let pitch = 0.0;
 		let roll  = 0.0;
-		$(() => {
-			$('#connect').click(() => {
 
-				//BLE setup. Connect and get service/characteristic notifications
-				navigator.bluetooth.requestDevice({ filters: [{ services: [service] }] })
-				.then(device => device.gatt.connect())
-				.then(server => server.getPrimaryService(service))
-				.then(service => service.getCharacteristic(characteristic))
-				.then(characteristic => {
-					return characteristic.startNotifications()
-					.then(_ => {
-						characteristic.addEventListener('characteristicvaluechanged',
-				                        handleCharacteristicValueChanged);
-					});
-				})
+		window.onload = () => {
+			document.getElementById('connect').onclick = connectBLE;
+		}
+
+		function connectBLE(){
+			//BLE setup. Connect and get service/characteristic notifications
+			navigator.bluetooth.requestDevice({ filters: [{ services: [service] }] })
+			.then(device => device.gatt.connect())
+			.then(server => server.getPrimaryService(service))
+			.then(service => service.getCharacteristic(characteristic))
+			.then(characteristic => {
+				return characteristic.startNotifications()
 				.then(_ => {
-					console.log('Notifications have been started.');
-				})
-				.catch(error => { console.log(error); });
+					characteristic.addEventListener('characteristicvaluechanged',
+			                        handleCharacteristicValueChanged);
+				});
+			})
+			.then(_ => {
+				console.log('Notifications have been started.');
+			})
+			.catch(error => { console.log(error); });
 
-				function handleCharacteristicValueChanged(event){
-					var value 	= event.target.value;
-					var str 	= "";
+			function handleCharacteristicValueChanged(event){
+				var value 	= event.target.value;
+				var str 	= "";
 
-					//concat and split string for roll, pitch, yaw (e.g. "-0.58,2.20,328.76")
-					for(var i=0; i<byteLength; i++){
-						str = str + String.fromCharCode(value.getUint8(i));
-					}
-					var imu 	= str.split(',');
+				//concat and split string for roll, pitch, yaw (e.g. "-0.58,2.20,328.76")
+				for(var i=0; i<byteLength; i++){
+					str = str + String.fromCharCode(value.getUint8(i));
+				}
+				var imu 	= str.split(',');
 
-					//update globals
-					roll 		= parseFloat(imu[0]);
-					pitch 		= parseFloat(imu[1]);
-					yaw 		= parseFloat(imu[2]);
-				}	
-			});
-		});
+				//update globals
+				roll 		= parseFloat(imu[0]);
+				pitch 		= parseFloat(imu[1]);
+				yaw 		= parseFloat(imu[2]);
+			}
+		}
 	</script>
 </body>
 </html>
